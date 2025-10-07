@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 
 const ContactPage = () => {
   const params = useSearchParams();
-  const id = params.get("id");
+  const jobId = params.get("id");
   const title = params.get("title");
   return (
     <>
@@ -14,7 +14,7 @@ const ContactPage = () => {
         description={`${title}`}
       />
 
-      <Contact jobId={id} />
+      <Contact jobId={jobId} />
     </>
   );
 };

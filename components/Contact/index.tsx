@@ -18,7 +18,7 @@ const radioClass =
   "focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark " +
   "dark:shadow-two dark:focus:border-primary dark:focus:shadow-none";
 
-const Contact = ({ jobId }: { jobId: string }) => {
+const Contact = ({ jobId }: { jobId: string | null }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [applicationData, setApplicationData] = useState({});
 
