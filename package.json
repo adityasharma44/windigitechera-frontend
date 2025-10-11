@@ -10,7 +10,11 @@
   },
   "dependencies": {
     "@babel/core": "^7.28.4",
+    "@heroicons/react": "^1.0.6",
     "@tanstack/react-table": "^8.21.3",
+    "@tiptap/extension-link": "^3.6.6",
+    "@tiptap/react": "^3.6.6",
+    "@tiptap/starter-kit": "^3.6.6",
     "axios": "^1.11.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
@@ -24,13 +28,14 @@
     "mongoos": "^0.0.1-security",
     "mongoose": "^8.16.4",
     "next": "^15.5.4",
-    "next-themes": "^0.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.6.0",
+    "react-icons": "^5.5.0",
     "react-modal-video": "^2.0.0"
   },
   "devDependencies": {
+    "@types/css-modules": "^1.0.5",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.8.9",
     "@types/react": "^18.2.33",

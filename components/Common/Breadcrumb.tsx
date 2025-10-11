@@ -26,7 +26,7 @@ const Breadcrumb = ({
             </ul>
             <div className="w-full">
               <div className="mb-4 max-w-[570px] md:mb-0 lg:mb-12">
-                <h1 className="mb-3 text-2xl font-bold text-black dark:text-white sm:text-3xl">
+                <h1 className="mb-3 text-2xl font-bold text-black sm:text-3xl">
                   {pageName}
                 </h1>
                 <p className="text-base font-medium leading-relaxed text-body-color">

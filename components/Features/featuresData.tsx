@@ -17,7 +17,7 @@ const featuresData: Feature[] = [
       "Whether you’re looking for work or need to hire someone, our platform brings both sides together in one place — easy, quick, and reliable.",
   },
   {
-    id: 1,
+    id: 2,
     icon: (
       <svg width="40" height="40" viewBox="0 0 40 40" className="fill-current">
         <path
@@ -32,7 +32,7 @@ const featuresData: Feature[] = [
       "We’ve designed the platform to be simple and clean, so you can post tasks, apply for work, and chat without any confusion.",
   },
   {
-    id: 1,
+    id: 3,
     icon: (
       <svg width="40" height="40" viewBox="0 0 40 40" className="fill-current">
         <path
@@ -47,7 +47,7 @@ const featuresData: Feature[] = [
       "Enjoy a smooth, fast, and secure experience every time you use the platform — whether you’re browsing, posting, or applying.",
   },
   {
-    id: 1,
+    id: 4,
     icon: (
       <svg width="40" height="42" viewBox="0 0 40 42" className="fill-current">
         <path
@@ -62,7 +62,7 @@ const featuresData: Feature[] = [
       "We help you find the best match — whether you’re hiring or applying — by connecting tasks with the right people based on skills and experience.",
   },
   {
-    id: 1,
+    id: 5,
     icon: (
       <svg width="40" height="40" viewBox="0 0 40 40" className="fill-current">
         <path
@@ -77,7 +77,7 @@ const featuresData: Feature[] = [
       "Show off your skills, experience, and past work in your profile, so clients or employers can find the right fit in you.",
   },
   {
-    id: 1,
+    id: 6,
     icon: (
       <svg width="40" height="45" viewBox="0 0 40 45" className="fill-current">
         <path
