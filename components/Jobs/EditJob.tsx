@@ -25,15 +25,20 @@ const buttonClass =
   "w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none " +
   "focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center";
 
-type AddJobProps = {
-  handleJobModalOpen: () => void;
-  onJobAdded: () => void;
+type EditJobProps = {
+  handleEditModalClose: () => void;
+  onJobUpdated: () => void;
+  jobData: {
+    _id: string;
+    title: string;
+    description: string;
+  };
 };
 
 const API = process.env.NEXT_PUBLIC_SERVER_URL;
 
-const AddJob = ({ handleJobModalOpen, onJobAdded }: AddJobProps) => {
-  const [formData, setFormData] = useState({ title: "", description: "" });
+const EditJob = ({ handleEditModalClose, onJobUpdated, jobData }: EditJobProps) => {
+  const [formData, setFormData] = useState({ title: jobData.title, description: jobData.description });
   const [loading, setLoading] = useState(false);
 
   // Prevent background scroll when modal is open
@@ -96,9 +101,10 @@ const AddJob = ({ handleJobModalOpen, onJobAdded }: AddJobProps) => {
         style: "border: none !important; outline: none !important;",
       },
     },
-    content: formData.description,
-    onUpdate: ({ editor }) =>
-      setFormData((prev) => ({ ...prev, description: editor.getHTML() })),
+    content: jobData.description,
+    onUpdate: ({ editor }) => {
+      setFormData((prev) => ({ ...prev, description: editor.getHTML() }));
+    },
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,23 +117,21 @@ const AddJob = ({ handleJobModalOpen, onJobAdded }: AddJobProps) => {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API}/api/jobs/addJob`, {
-        method: "POST",
+      const res = await fetch(`${API}/api/jobs/updateJob/${jobData._id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(formData),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to add job");
+      if (!res.ok) throw new Error(data.message || "Failed to update job");
       
-      toast.success("Job added successfully!");
-      onJobAdded();
-      setFormData({ title: "", description: "" });
-      editor?.commands.setContent("");
+      toast.success("Job updated successfully!");
+      onJobUpdated();
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || "Failed to add job");
+      toast.error(error.message || "Failed to update job");
     } finally {
       setLoading(false);
     }
@@ -138,24 +142,17 @@ const AddJob = ({ handleJobModalOpen, onJobAdded }: AddJobProps) => {
       <div className="relative w-full max-w-3xl h-[90vh] flex flex-col">
         <div className="relative rounded-lg border border-gray-300 bg-white shadow-md flex flex-col h-full">
           <div className="flex items-center justify-between rounded-t border-b border-gray-200 p-4 flex-shrink-0">
-            <h3 className="text-xl font-semibold text-gray-900">Add Job</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Edit Job</h3>
             <button
               type="button"
-              onClick={handleJobModalOpen}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900"
+              onClick={handleEditModalClose}
+              className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-200 hover:text-gray-900"
             >
-              <svg
-                className="h-3 w-3"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 14 14"
-              >
+              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                 <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
                 />
               </svg>
             </button>
@@ -163,24 +160,26 @@ const AddJob = ({ handleJobModalOpen, onJobAdded }: AddJobProps) => {
 
           <div className="flex-1 overflow-y-auto p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className={labelClass}>Job Title</label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  className={inputClass}
-                  placeholder="eg. Full Stack Developer"
-                  required
-                />
-              </div>
+            <div>
+              <label htmlFor="title" className={labelClass}>
+                Job Title
+              </label>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                className={inputClass}
+                placeholder="e.g., Senior React Developer"
+                required
+              />
+            </div>
 
-              <div>
-                <label className={labelClass}>Job Description</label>
-                <div className="border border-gray-300 rounded-md overflow-hidden">
-                  {/* Toolbar */}
-                  <div className="flex flex-wrap gap-1 bg-gray-50 border-b border-gray-300 p-2">
+            <div>
+              <label className={labelClass}>Job Description</label>
+              <div className="border border-gray-300 rounded-lg overflow-hidden">
+                <div className="bg-gray-50 border-b border-gray-300 p-2 flex flex-wrap gap-1">
                   <button
                     type="button"
                     onClick={() => editor?.chain().focus().toggleBold().run()}
@@ -211,7 +210,6 @@ const AddJob = ({ handleJobModalOpen, onJobAdded }: AddJobProps) => {
                   >
                     <AiOutlineStrikethrough className="h-5 w-5" />
                   </button>
-                  <div className="w-px bg-gray-300 mx-1" />
                   <button
                     type="button"
                     onClick={() => editor?.chain().focus().toggleBulletList().run()}
@@ -228,18 +226,17 @@ const AddJob = ({ handleJobModalOpen, onJobAdded }: AddJobProps) => {
                     className={`p-2 rounded transition-colors ${
                       editor?.isActive('orderedList') ? 'bg-blue-500 text-white' : 'hover:bg-gray-200'
                     }`}
-                    title="Ordered List"
+                    title="Numbered List"
                   >
                     <AiOutlineOrderedList className="h-5 w-5" />
                   </button>
-                  <div className="w-px bg-gray-300 mx-1" />
                   <button
                     type="button"
                     onClick={() => editor?.chain().focus().toggleBlockquote().run()}
                     className={`p-2 rounded transition-colors ${
                       editor?.isActive('blockquote') ? 'bg-blue-500 text-white' : 'hover:bg-gray-200'
                     }`}
-                    title="Blockquote"
+                    title="Quote"
                   >
                     <BiSolidQuoteAltLeft className="h-5 w-5" />
                   </button>
@@ -268,36 +265,36 @@ const AddJob = ({ handleJobModalOpen, onJobAdded }: AddJobProps) => {
                   >
                     <AiOutlineLink className="h-5 w-5" />
                   </button>
-                  </div>
+                </div>
 
-                  <div className="p-4 min-h-[200px] max-h-[400px] overflow-y-auto bg-white">
-                    <style jsx global>{`
-                      .ProseMirror {
-                        border: none !important;
-                        outline: none !important;
-                      }
-                      .ProseMirror:focus {
-                        outline: none !important;
-                      }
-                    `}</style>
-                    <EditorContent editor={editor} />
-                  </div>
+                <div className="p-4 min-h-[200px] max-h-[400px] overflow-y-auto bg-white">
+                  <style jsx global>{`
+                    .ProseMirror {
+                      border: none !important;
+                      outline: none !important;
+                    }
+                    .ProseMirror:focus {
+                      outline: none !important;
+                    }
+                  `}</style>
+                  <EditorContent editor={editor} />
                 </div>
               </div>
+            </div>
 
-              <button 
-                type="submit" 
-                className={`${buttonClass} disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
-                disabled={loading}
-              >
-                {loading && (
-                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                )}
-                {loading ? "Adding..." : "Add Job"}
-              </button>
+            <button 
+              type="submit" 
+              className={`${buttonClass} disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+              disabled={loading}
+            >
+              {loading && (
+                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
+              {loading ? "Updating..." : "Update Job"}
+            </button>
             </form>
           </div>
         </div>
@@ -307,4 +304,4 @@ const AddJob = ({ handleJobModalOpen, onJobAdded }: AddJobProps) => {
   );
 };
 
-export default AddJob;
+export default EditJob;

@@ -19,12 +19,12 @@ const menuData: Menu[] = [
     path: "/jobs",
     newTab: false,
   },
-  // {
-  //   id: 3,
-  //   title: "Connect",
-  //   path: "/connect",
-  //   newTab: false,
-  // },
+  {
+    id: 3,
+    title: "Register",
+    path: "/register",
+    newTab: false,
+  },
   // {
   //   id: 4,
   //   title: "Pages",

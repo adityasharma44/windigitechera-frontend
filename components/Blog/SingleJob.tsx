@@ -4,6 +4,14 @@ import Link from "next/link";
 
 const SingleJob = ({ job }: { job: Job }) => {
   const { title, description, createdAt } = job;
+  
+  // Strip HTML tags for preview
+  const stripHtml = (html: string) => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+  };
+  
   return (
     <>
       <div
@@ -20,7 +28,7 @@ const SingleJob = ({ job }: { job: Job }) => {
             </Link>
           </h3>
           <p className="mb-6 border-b border-body-color text-ellipsis border-opacity-10 pb-6 text-sm font-medium text-body-color">
-            {description.slice(0,200)}
+            {stripHtml(description).slice(0,200)}...
           </p>
           <div className="flex items-center justify-between">
             <div className="">

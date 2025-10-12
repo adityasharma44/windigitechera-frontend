@@ -33,7 +33,10 @@ const JobDetails = () => {
 
       <section className="pb-[60px]">
         <div className="container">
-          <p className="mb-6 text-body-color">{jobDetails?.description}</p>
+          <div 
+            className="mb-6 text-grey-900 prose prose-sm max-w-none"
+            dangerouslySetInnerHTML={{ __html: jobDetails?.description || '' }}
+          />
 
           <Link
             href={{

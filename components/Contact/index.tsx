@@ -1,26 +1,26 @@
 "use client";
 import Image from "next/image";
 import { useRef, useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 import uploadFileIcon from "../../assets/upload.png";
 
 const API = process.env.NEXT_PUBLIC_SERVER_URL;
 
 const inputClass =
   "w-full rounded-md border border-stroke bg-[#f8f8f8] px-3 py-2.5 text-sm text-body-color outline-none " +
-  "focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark " +
-  "dark:shadow-two dark:focus:border-primary dark:focus:shadow-none";
+  "focus:border-primary";
 
 const labelClass =
-  "mb-2 block text-sm font-medium text-dark dark:text-white";
+  "mb-2 block text-sm font-medium text-dark";
 
 const radioClass =
   "mr-2 rounded-md border border-stroke bg-[#f8f8f8] text-body-color " +
-  "focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark " +
-  "dark:shadow-two dark:focus:border-primary dark:focus:shadow-none";
+  "focus:border-primary";
 
-const Contact = ({ jobId }: { jobId: string | null }) => {
+const Contact = ({ jobId, type = "job" }: { jobId?: string | null; type?: "job" | "register" }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [applicationData, setApplicationData] = useState({});
+  const [applicationData, setApplicationData] = useState<any>({});
+  const [loading, setLoading] = useState(false);
 
   const handleButtonClick = () => fileInputRef.current?.click();
 
@@ -38,11 +38,20 @@ const Contact = ({ jobId }: { jobId: string | null }) => {
 
   const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
+    
     const formData = new FormData();
     Object.entries(applicationData).forEach(([key,value])=>{
       formData.append(key,value as string | Blob)
     })
-    formData.append("jobId",jobId);
+    
+    // Add type field
+    formData.append("type", type);
+    
+    // Only add jobId if type is "job"
+    if (type === "job" && jobId) {
+      formData.append("jobId", jobId);
+    }
 
     try {
     const response = await fetch(`${API}/api/application/apply/resumes`, {
@@ -51,15 +60,21 @@ const Contact = ({ jobId }: { jobId: string | null }) => {
     });
 
     const result = await response.json();
-    console.log("✅ Server Response:", result);
 
     if (response.ok) {
-      alert("Application submitted successfully!");
+      const successMessage = type === "job" ? "Application submitted successfully!" : "Registration submitted successfully!";
+      toast.success(successMessage);
+      // Reset form
+      setApplicationData({});
+      if (fileInputRef.current) fileInputRef.current.value = '';
     } else {
-      alert(result.message || "Failed to submit application");
+      toast.error(result.message || "Failed to submit");
     }
   } catch (error) {
     console.error("❌ Error submitting form:", error);
+    toast.error("An error occurred. Please try again.");
+  } finally {
+    setLoading(false);
   }
   }
 
@@ -69,15 +84,17 @@ const Contact = ({ jobId }: { jobId: string | null }) => {
         <div className="flex flex-wrap">
           <div className="w-full">
             <div
-              className="wow fadeInUp mb-12 rounded-md bg-white px-4 py-4 shadow-three dark:bg-gray-dark 
+              className="wow fadeInUp mb-12 rounded-md bg-white px-4 py-4 shadow-three 
               sm:p-[55px] lg:mb-5 lg:px-8 xl:p-[40px]"
               data-wow-delay=".15s"
             >
-              <h2 className="mb-2 text-2xl font-bold text-black dark:text-white sm:text-3xl lg:text-2xl xl:text-3xl">
-                Fill the Details below?
+              <h2 className="mb-2 text-2xl font-bold text-black sm:text-3xl lg:text-2xl xl:text-3xl">
+                {type === "job" ? "Apply for this Position" : "Register Your Profile"}
               </h2>
               <p className="mb-12 text-base font-medium text-body-color">
-                Share your skills and experience below so that we can connect with you.
+                {type === "job" 
+                  ? "Share your skills and experience below so that we can connect with you for this job." 
+                  : "Register your profile with us and we'll connect you with relevant opportunities."}
               </p>
 
               {/* ✅ Form */}
@@ -174,7 +191,7 @@ const Contact = ({ jobId }: { jobId: string | null }) => {
                     <label className={labelClass}>Gender</label>
                     <div className="flex items-center space-x-6">
                       {["Male", "Female", "Other"].map((g) => (
-                        <label key={g} className="flex items-center text-md font-medium text-body-color dark:text-white">
+                        <label key={g} className="flex items-center text-md font-medium text-body-color">
                           <input type="radio" name="gender" onChange={(e) => handleChange(e)} value={g} className={radioClass} />
                           {g.charAt(0).toUpperCase() + g.slice(1)}
                         </label>
@@ -191,7 +208,7 @@ const Contact = ({ jobId }: { jobId: string | null }) => {
                       {["Married", "Single"].map((status) => (
                         <label
                           key={status}
-                          className="flex items-center text-md font-medium text-body-color dark:text-white"
+                          className="flex items-center text-md font-medium text-body-color"
                         >
                           <input type="radio" name="maritalStatus" onChange={(e) => handleChange(e)} value={status} className={radioClass} />
                           {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -232,19 +249,51 @@ const Contact = ({ jobId }: { jobId: string | null }) => {
                       onClick={handleButtonClick}
                       className="rounded-md border border-dashed border-gray-400 bg-[#f8f8f8] p-5 text-sm text-body-color 
                         outline-none flex flex-col items-center justify-center
-                        focus:border-primary dark:border-dashed dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two 
-                        dark:focus:border-primary dark:focus:shadow-none"
+                        focus:border-primary"
                     >
                       <Image alt="upload file icon" className="h-[120px] w-[120px]" src={uploadFileIcon} />
                       Click to upload resume
                     </button>
+                    {applicationData.resumeFile && (
+                      <div className="mt-3 flex items-center gap-2 rounded-md bg-green-50 border border-green-200 px-4 py-2.5">
+                        <svg className="h-5 w-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-sm text-green-700 font-medium truncate">
+                          {applicationData.resumeFile.name}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setApplicationData({ ...applicationData, resumeFile: null });
+                            if (fileInputRef.current) fileInputRef.current.value = '';
+                          }}
+                          className="ml-auto text-green-600 hover:text-green-800 flex-shrink-0"
+                          title="Remove file"
+                        >
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Submit */}
                 <div className="w-full px-2">
-                  <button type="submit" className="rounded-md bg-primary px-6 py-3 text-sm font-medium text-white shadow-submit duration-300 hover:bg-primary/90 dark:shadow-submit-dark">
-                    Submit Details
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="rounded-md bg-primary px-6 py-3 text-sm font-medium text-white shadow-submit duration-300 hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {loading && (
+                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    )}
+                    {loading ? "Submitting..." : "Submit Details"}
                   </button>
                 </div>
               </form>
@@ -252,6 +301,7 @@ const Contact = ({ jobId }: { jobId: string | null }) => {
           </div>
         </div>
       </div>
+      <Toaster position="top-center" />
     </section>
   );
 };
