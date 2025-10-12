@@ -1,13 +1,13 @@
 "use client";
 
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import SingleJob from "@/components/Blog/SingleJob";
 import Breadcrumb from "@/components/Common/Breadcrumb";
-import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_SERVER_URL;
 
-const Blog = () => {
+const BlogContent = () => {
   const [jobs, setJobs] = useState<any[]>([]);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -16,26 +16,21 @@ const Blog = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Read current page from query params
   const page = parseInt(searchParams.get("page") || "1", 10);
 
-  // Handle pagination
   const handleMove = (num: number) => {
     const newPage = Math.max(page + num, 1);
     router.push(`?page=${newPage}&q=${debouncedQuery}`);
   };
 
-  // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
       router.push(`?page=1&q=${query}`);
     }, 700);
-
     return () => clearTimeout(timer);
-  }, [query,router]);
+  }, [query, router]);
 
-  // Fetch jobs whenever page or debouncedQuery changes
   useEffect(() => {
     const fetchJobs = async () => {
       try {
@@ -63,7 +58,7 @@ const Blog = () => {
 
       <section className="pb-[60px] pt-[15px]">
         <div className="container">
-          {/* 🔎 Search Bar */}
+          {/* Search */}
           <div className="mb-8 flex justify-center">
             <input
               type="text"
@@ -74,7 +69,7 @@ const Blog = () => {
             />
           </div>
 
-          {/* Jobs List */}
+          {/* Jobs */}
           <div className="flex flex-wrap justify-center">
             {jobs.map((job) => (
               <div
@@ -113,6 +108,15 @@ const Blog = () => {
         </div>
       </section>
     </>
+  );
+};
+
+// ✅ Wrap in Suspense
+const Blog = () => {
+  return (
+    <Suspense fallback={<div className="text-center p-8">Loading jobs...</div>}>
+      <BlogContent />
+    </Suspense>
   );
 };
 
